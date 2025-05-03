@@ -4,10 +4,10 @@ package main
 // This generates the go code from .proto files
 // For simple cases like this it avoids the need to have a Makefile
 
-//go:generate protoc --go_opt=module=sortedfamily.com/financeservice --go-grpc_opt=module=sortedfamily.com/financeservice --go_out=. --go-grpc_out=. --proto_path=../../proto financeservice.proto
+//go:generate protoc --go_opt=module=sortedstartup.com/simple-blockchain/proto --go-grpc_opt=module=sortedstartup.com/simple-blockchain/proto --go_out=./backend/proto/ --go-grpc_out=./backend/proto/ --proto_path=./proto blockchain.proto
 
-// This generates JS code from .proto files
-//go:generate protoc --ts_opt=no_namespace --ts_opt=unary_rpc_promise=true --ts_opt=target=web --ts_out=../../frontend/ionic/src/proto/ --proto_path=../../proto financeservice.proto
+// // This generates JS code from .proto files
+// //go:generate protoc --ts_opt=no_namespace --ts_opt=unary_rpc_promise=true --ts_opt=target=web --ts_out=../../frontend/ionic/src/proto/ --proto_path=../../proto financeservice.proto
 
 // // This is a hack to avoid using grpc-js which is not needed in the browser
 // // If we can move to connect RPC auto generation this is not needed
