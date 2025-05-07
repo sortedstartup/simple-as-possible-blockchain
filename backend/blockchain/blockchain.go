@@ -3,6 +3,7 @@ package blockchain
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"time"
 
 	pb "sortedstartup.com/simple-blockchain/backend/proto"
@@ -42,7 +43,7 @@ func NewBlockChain() *Blockchain {
 }
 
 func computeHash(block Block) string {
-	record := string(block.index) + block.MerkleRoot + string(block.timestamp)
+	record := fmt.Sprintf("%d%s%d", block.index, block.MerkleRoot, block.timestamp)
 	h := sha256.Sum256([]byte(record))
 
 	return hex.EncodeToString(h[:])
