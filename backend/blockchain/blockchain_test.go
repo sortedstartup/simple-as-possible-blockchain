@@ -6,10 +6,10 @@ import (
 	pb "sortedstartup.com/simple-blockchain/backend/proto"
 )
 
-func SufficientBalance(t *testing.T) {
+func TestSufficientBalance(t *testing.T) {
 
 	bc := NewBlockChain()
-	bc.AccountBalances["Alice"] = 1000
+	bc.AccountBalances["alice"] = 1000
 
 	tx := &pb.Transaction{
 		Sender:    "alice",
@@ -28,7 +28,7 @@ func SufficientBalance(t *testing.T) {
 	}
 }
 
-func InsufficientBalance(t *testing.T) {
+func TestInsufficientBalance(t *testing.T) {
 	bc := NewBlockChain()
 	bc.AccountBalances["alice"] = 1000
 
@@ -40,7 +40,7 @@ func InsufficientBalance(t *testing.T) {
 
 	success, msg := bc.HandleTransaction(tx)
 
-	if !success {
+	if success {
 		t.Errorf("expected transaction to fail due to insufficient balance")
 	}
 
