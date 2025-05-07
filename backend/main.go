@@ -7,6 +7,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"sortedstartup.com/simple-blockchain/backend/api"
+	"sortedstartup.com/simple-blockchain/backend/blockchain"
 	"sortedstartup.com/simple-blockchain/backend/common/interceptors"
 	"sortedstartup.com/simple-blockchain/backend/proto"
 )
@@ -18,14 +19,16 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
+	bc := blockchain.NewBlockChain()
+	bc.AccountBalances["alice"] = 1000 //hardcoding as of now to alice
+	apiServer := api.NewBlockChainAPI(bc)
 	grpcServer := grpc.NewServer(grpc.ChainUnaryInterceptor(interceptors.PanicRecoveryInterceptor()))
 
 	// Enable gRPC reflection
 	reflection.Register(grpcServer)
 
 	// Register your gRPC services here
-	proto.RegisterBlockchainServiceServer(grpcServer, api.NewBlockChainAPI())
+	proto.RegisterBlockchainServiceServer(grpcServer, apiServer)
 
 	fmt.Println("Starting gRPC server on port ", port)
 	if err := grpcServer.Serve(lis); err != nil {
