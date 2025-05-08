@@ -54,7 +54,24 @@ func (bc *Blockchain) HandleTransaction(tx *pb.Transaction) (bool, string) {
 		return false, "insufficient balance"
 	}
 
+	//will update this logic with UTXO
+	bc.AccountBalances[tx.Sender] -= tx.Amount
+	bc.AccountBalances[tx.Recipient] += tx.Amount
+
 	bc.MemoryPool = append(bc.MemoryPool, tx)
 
 	return true, "transaction added to mempool"
+}
+
+func (bc *Blockchain) PrintMemPool() {
+	fmt.Println("Current Mempool:")
+	if len(bc.MemoryPool) == 0 {
+		fmt.Println("  (empty)")
+		return
+	}
+
+	for i, tx := range bc.MemoryPool {
+		fmt.Printf("  #%d → TxID: %s | From: %s | To: %s | Amount: %d\n",
+			i+1, tx.Txid, tx.Sender, tx.Recipient, tx.Amount)
+	}
 }

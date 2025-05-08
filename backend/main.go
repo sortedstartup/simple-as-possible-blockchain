@@ -20,7 +20,10 @@ func main() {
 		panic(err)
 	}
 	bc := blockchain.NewBlockChain()
-	bc.AccountBalances["alice"] = 1000 //hardcoding as of now to alice
+
+	pubKeyHex := "a0caa95ac1b9a961b804f606e86e976d561fe08956f6e32f72b6a268304e59d795c75bf4c8ea238f0e74aaddee59a9c65e55dfed22c7ceb92a10ec630a1cbb5b"
+	bc.AccountBalances[pubKeyHex] = 1000
+
 	apiServer := api.NewBlockChainAPI(bc)
 	grpcServer := grpc.NewServer(grpc.ChainUnaryInterceptor(interceptors.PanicRecoveryInterceptor()))
 

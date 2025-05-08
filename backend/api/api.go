@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"sortedstartup.com/simple-blockchain/backend/blockchain"
+	"sortedstartup.com/simple-blockchain/backend/helpers"
 	proto "sortedstartup.com/simple-blockchain/backend/proto"
 )
 
@@ -36,11 +37,29 @@ func (b *BlockChainAPI) SubmitTransaction(ctx context.Context, req *proto.Submit
 	tx := req.Transaction
 	tx.Timestamp = time.Now().Unix()
 
+	if err := helpers.ValidateRawPublicKey(tx.Sender); err != nil {
+		return &proto.SubmitTransactionResponse{
+			Success: false,
+			Message: "invalid sender public key: " + err.Error(),
+		}, nil
+	}
+	if err := helpers.ValidateRawPublicKey(tx.Recipient); err != nil {
+		return &proto.SubmitTransactionResponse{
+			Success: false,
+			Message: "invalid recipient public key: " + err.Error(),
+		}, nil
+	}
+
 	raw := tx.Sender + tx.Recipient + fmt.Sprintf("%d%d", tx.Amount, tx.Timestamp)
 	hash := sha256.Sum256([]byte(raw))
 	tx.Txid = hex.EncodeToString(hash[:])
 
 	success, msg := b.blockchain.HandleTransaction(tx) //validates balances from AccountBalances Map
+
+	if success {
+		fmt.Println("Transaction accepted. Mempool now:")
+		b.blockchain.PrintMemPool()
+	}
 
 	return &proto.SubmitTransactionResponse{
 		Success: success,
