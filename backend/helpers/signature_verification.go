@@ -44,11 +44,12 @@ func VerifySignature(senderHex, recipientHex string, amount, timestamp int64, si
 	}
 	fmt.Printf(" sigBytes: %x\n", sigBytes)
 
-	r := new(big.Int).SetBytes(sigBytes[:32])
-	s := new(big.Int).SetBytes(sigBytes[32:])
-	fmt.Printf("DEBUG VerifySignature: r=%s, s=%s\n", r.String(), s.String())
-
-	if !ecdsa.Verify(&publicKey, hash[:], r, s) {
+	result := ecdsa.VerifyASN1(&publicKey, hash[:], sigBytes)
+	if result {
+		fmt.Println("DEBUG VerifySignature: Signature verified successfully!")
+		return nil
+	} else {
+		fmt.Println("DEBUG VerifySignature: Signature verification failed!")
 		return errors.New("signature verification failed")
 	}
 
@@ -78,6 +79,8 @@ func signTransaction(priv *ecdsa.PrivateKey, sender, recipient string, amount, t
 	raw := fmt.Sprintf("%s%s%d%d", sender, recipient, amount, timestamp)
 	hash := sha256.Sum256([]byte(raw))
 
+	fmt.Printf(" Raw message: %s...\n", raw[:40])
+	fmt.Printf(" Hash: %x\n", hash[:])
 	r, s, err := ecdsa.Sign(rand.Reader, priv, hash[:])
 	if err != nil {
 		return "", fmt.Errorf("signing failed: %v", err)
