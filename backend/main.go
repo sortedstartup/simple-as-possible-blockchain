@@ -20,7 +20,7 @@ func main() {
 		panic(err)
 	}
 	bc := blockchain.NewBlockChain()
-	bc.AccountBalances["alice"] = 1000 //hardcoding as of now to alice
+
 	apiServer := api.NewBlockChainAPI(bc)
 	grpcServer := grpc.NewServer(grpc.ChainUnaryInterceptor(interceptors.PanicRecoveryInterceptor()))
 

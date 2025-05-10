@@ -32,3 +32,32 @@ Finality - when the transction is confirmed
 -> bitcoin, ethereum, hbar
 
 Find answers for bitcoin, etherum and hedera.
+
+## Accounts, Address, public key
+Q) How do we create account on the bitcoin blockchain
+A) We dont, there is no need to create any account on bitcoin.
+The system is driven by public - private key.
+A address is derived from any public key
+address = simplefn (public_key)
+
+This means if you generate a public-private key on a personal laptop,
+you have a bitcoin address !
+you dont need to create it on bitcoin via an API.
+
+Q) If address=func(public_key) on a personal computer, how will a sender transfer it to me, how will I able to use that amount as a sender ?
+The sender only need to know you r public key to send you money.
+they will calcualte the address = func (public_key) 
+The bitcoin network will check if the address is a valid public key and thats about it,
+it is ready to transfer it to that address.
+This transaction is now recorded on chain.
+i.e it got recorded that a public key --transferred--to--> another public key
+thats all bitcoin cares about.
+
+How to claim money associated with your public derived address.
+Private key !
+private key is like a password and more than a password,
+without revealing the private key you can proove using algorithms that you own it.
+So you simply sign your transactions using your private key, the bitcoin system will recognize you are the owner of the public-private key pair.
+So use your private key to move funds assigned to your public key and it works !
+
+
