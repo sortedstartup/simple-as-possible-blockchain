@@ -14,6 +14,8 @@ Public key by ECDSA
 func ValidateRawPublicKey(hexPub string) error {
 	if len(hexPub) == 128 {
 		hexPub = "04" + hexPub
+	} else if len(hexPub) != 130 {
+		return errors.New("invalid public key lenght")
 	}
 
 	_, err := hex.DecodeString(hexPub)

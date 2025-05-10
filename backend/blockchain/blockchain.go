@@ -2,12 +2,19 @@ package blockchain
 
 import (
 	"crypto/sha256"
+	_ "embed"
 	"encoding/hex"
 	"fmt"
 	"time"
 
 	pb "sortedstartup.com/simple-blockchain/backend/proto"
 )
+
+//go:embed keys/satoshi.publickey
+var satoshiPublicKey string
+
+//go:embed keys/satoshi.privatekey
+var satoshiPrivateKey string
 
 type Block struct {
 	index        int
@@ -26,6 +33,19 @@ type Blockchain struct {
 }
 
 func NewBlockChain() *Blockchain {
+	return createGenesisBlock()
+}
+
+func createGenesisBlock() *Blockchain {
+	bc := &Blockchain{
+		Blocks:          []Block{},
+		MemoryPool:      []*pb.Transaction{},
+		AccountBalances: make(map[string]uint64),
+	}
+
+	satoshiPubKey := satoshiPublicKey
+	bc.AccountBalances[satoshiPubKey] = 1000 // coinbase transaction
+
 	genesis := Block{
 		index:        0,
 		timestamp:    time.Now().Unix(),
@@ -35,11 +55,8 @@ func NewBlockChain() *Blockchain {
 		MerkleRoot:   "",
 	}
 	genesis.hash = computeHash(genesis)
-	return &Blockchain{
-		Blocks:          []Block{genesis},
-		MemoryPool:      []*pb.Transaction{},
-		AccountBalances: make(map[string]uint64),
-	}
+	bc.Blocks = append(bc.Blocks, genesis)
+	return bc
 }
 
 func computeHash(block Block) string {
