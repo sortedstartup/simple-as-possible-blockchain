@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"time"
 
+	"sortedstartup.com/simple-blockchain/backend/helpers"
 	pb "sortedstartup.com/simple-blockchain/backend/proto"
 )
 
@@ -44,7 +45,7 @@ func createGenesisBlock() *Blockchain {
 	}
 
 	satoshiPubKey := satoshiPublicKey
-	bc.AccountBalances[satoshiPubKey] = 1000 // coinbase transaction
+	bc.AccountBalances[satoshiPubKey] = 100000 // coinbase transaction
 
 	genesis := Block{
 		index:        0,
@@ -67,6 +68,12 @@ func computeHash(block Block) string {
 }
 
 func (bc *Blockchain) HandleTransaction(tx *pb.Transaction) (bool, string) {
+
+	err := helpers.VerifySignature(tx.Sender, tx.Recipient, int64(tx.Amount), tx.Timestamp, string(tx.Signature))
+	if err != nil {
+		return false, "signature verification failed: " + err.Error()
+	}
+
 	if bc.AccountBalances[tx.Sender] < tx.Amount {
 		return false, "insufficient balance"
 	}

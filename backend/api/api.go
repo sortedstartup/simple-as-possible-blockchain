@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"time"
 
 	"sortedstartup.com/simple-blockchain/backend/blockchain"
 	"sortedstartup.com/simple-blockchain/backend/helpers"
@@ -35,7 +34,7 @@ func (b *BlockChainAPI) SubmitTransaction(ctx context.Context, req *proto.Submit
 	}
 
 	tx := req.Transaction
-	tx.Timestamp = time.Now().Unix()
+	// tx.Timestamp = time.Now().Unix()
 
 	if err := helpers.ValidateRawPublicKey(tx.Sender); err != nil {
 		return &proto.SubmitTransactionResponse{
@@ -52,6 +51,8 @@ func (b *BlockChainAPI) SubmitTransaction(ctx context.Context, req *proto.Submit
 
 	raw := tx.Sender + tx.Recipient + fmt.Sprintf("%d%d", tx.Amount, tx.Timestamp)
 	hash := sha256.Sum256([]byte(raw))
+	fmt.Printf(" api hash: %x\n", hash[:])
+
 	tx.Txid = hex.EncodeToString(hash[:])
 
 	success, msg := b.blockchain.HandleTransaction(tx) //validates balances from AccountBalances Map
