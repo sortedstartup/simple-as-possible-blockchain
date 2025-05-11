@@ -10,40 +10,15 @@ import (
 )
 
 func TestSubmitTransaction(t *testing.T) {
+
 	// Initialize a mock blockchain
 	mockBlockchain := blockchain.NewBlockChain()
 	api := NewBlockChainAPI(mockBlockchain)
 
-	// Test case: nil request
-	resp, err := api.SubmitTransaction(context.Background(), nil)
-	if err != nil {
-		t.Fatalf("expected no error, got %v", err)
-	}
-	if resp.Success {
-		t.Errorf("expected success to be false, got true")
-	}
-	if resp.Message != "empty transaction request" {
-		t.Errorf("unexpected message: %v", resp.Message)
-	}
-
-	// Test case: invalid sender public key
-	req := &proto.SubmitTransactionRequest{
-		Transaction: &proto.Transaction{
-			Sender:    "invalid_sender",
-			Recipient: "valid_recipient",
-			Amount:    10,
-		},
-	}
-	resp, err = api.SubmitTransaction(context.Background(), req)
-	if err != nil {
-		t.Fatalf("expected no error, got %v", err)
-	}
-	if resp.Success {
-		t.Errorf("expected success to be false, got true")
-	}
-
+	// ---------------------------------
 	// Test case: valid transaction
-	req = &proto.SubmitTransactionRequest{
+	//------------------------------------
+	req := &proto.SubmitTransactionRequest{
 		Transaction: &proto.Transaction{
 			Sender: blockchain.SatoshiPublicKey,
 			//TODO: should error out on random string
@@ -58,10 +33,41 @@ func TestSubmitTransaction(t *testing.T) {
 	}
 	req.Transaction.Signature = sig
 
+	resp, err := api.SubmitTransaction(context.Background(), req)
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+
+	// ---------------------------------=
+	// Test case: nil request
+	//------------------------------------
+	resp, err = api.SubmitTransaction(context.Background(), nil)
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	if resp.Success {
+		t.Errorf("expected success to be false, got true")
+	}
+	if resp.Message != "empty transaction request" {
+		t.Errorf("unexpected message: %v", resp.Message)
+	}
+
+	// Test case: invalid sender public key
+	req = &proto.SubmitTransactionRequest{
+		Transaction: &proto.Transaction{
+			Sender:    "invalid_sender",
+			Recipient: "valid_recipient",
+			Amount:    10,
+		},
+	}
 	resp, err = api.SubmitTransaction(context.Background(), req)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
+	if resp.Success {
+		t.Errorf("expected success to be false, got true")
+	}
+
 }
 
 // Helper method to sign a transaction
