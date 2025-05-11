@@ -2,8 +2,6 @@ package api
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
 
 	"sortedstartup.com/simple-blockchain/backend/blockchain"
@@ -12,7 +10,6 @@ import (
 )
 
 type BlockChainAPI struct {
-	// Add your fields here
 	proto.UnimplementedBlockchainServiceServer
 	blockchain *blockchain.Blockchain
 }
@@ -24,7 +21,6 @@ func NewBlockChainAPI(bc *blockchain.Blockchain) *BlockChainAPI {
 }
 
 func (b *BlockChainAPI) SubmitTransaction(ctx context.Context, req *proto.SubmitTransactionRequest) (*proto.SubmitTransactionResponse, error) {
-	// Implement your logic here
 
 	if req == nil || req.Transaction == nil {
 		return &proto.SubmitTransactionResponse{
@@ -48,12 +44,6 @@ func (b *BlockChainAPI) SubmitTransaction(ctx context.Context, req *proto.Submit
 			Message: "invalid recipient public key: " + err.Error(),
 		}, nil
 	}
-
-	raw := tx.Sender + tx.Recipient + fmt.Sprintf("%d%d", tx.Amount, tx.Timestamp)
-	hash := sha256.Sum256([]byte(raw))
-	fmt.Printf(" api hash: %x\n", hash[:])
-
-	tx.Txid = hex.EncodeToString(hash[:])
 
 	success, msg := b.blockchain.HandleTransaction(tx) //validates balances from AccountBalances Map
 

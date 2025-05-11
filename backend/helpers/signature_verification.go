@@ -75,12 +75,10 @@ type ecdsaSignature struct {
 	R, S *big.Int
 }
 
-func signTransaction(priv *ecdsa.PrivateKey, sender, recipient string, amount, timestamp int64) (string, error) {
+func SignTransaction(priv *ecdsa.PrivateKey, sender, recipient string, amount, timestamp int64) (string, error) {
 	raw := fmt.Sprintf("%s%s%d%d", sender, recipient, amount, timestamp)
 	hash := sha256.Sum256([]byte(raw))
 
-	fmt.Printf(" Raw message: %s...\n", raw[:40])
-	fmt.Printf(" Hash: %x\n", hash[:])
 	r, s, err := ecdsa.Sign(rand.Reader, priv, hash[:])
 	if err != nil {
 		return "", fmt.Errorf("signing failed: %v", err)
@@ -92,4 +90,19 @@ func signTransaction(priv *ecdsa.PrivateKey, sender, recipient string, amount, t
 	}
 
 	return hex.EncodeToString(sigBytes), nil
+}
+
+// ConvertHexToPrivateKey converts a hex-encoded string into an *ecdsa.PrivateKey.
+func ConvertHexToPrivateKey(privateKeyHex string) (*ecdsa.PrivateKey, error) {
+	privBytes, err := hex.DecodeString(privateKeyHex)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode private key hex: %v", err)
+	}
+
+	privKey, err := x509.ParseECPrivateKey(privBytes)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse EC private key: %v", err)
+	}
+
+	return privKey, nil
 }
