@@ -15,7 +15,7 @@ func ValidateRawPublicKey(hexPub string) error {
 	if len(hexPub) == 128 {
 		hexPub = "04" + hexPub
 	} else if len(hexPub) != 130 {
-		return errors.New("invalid public key lenght")
+		return errors.New("invalid public key length")
 	}
 
 	_, err := hex.DecodeString(hexPub)
