@@ -14,7 +14,6 @@ import (
 )
 
 func VerifySignature(senderHex, recipientHex string, amount, timestamp int64, signatureHex string) error {
-	fmt.Printf("Signature length: %d\n", len(signatureHex))
 
 	if signatureHex == "" {
 		return fmt.Errorf("empty signature")
@@ -35,14 +34,11 @@ func VerifySignature(senderHex, recipientHex string, amount, timestamp int64, si
 
 	raw := senderHex + recipientHex + fmt.Sprintf("%d%d", amount, timestamp)
 	hash := sha256.Sum256([]byte(raw))
-	fmt.Printf(" Raw message: %s...\n", raw[:40])
-	fmt.Printf(" Hash: %x\n", hash[:])
 
 	sigBytes, err := hex.DecodeString(signatureHex)
 	if err != nil {
 		return fmt.Errorf("invalid signature format: %v", err)
 	}
-	fmt.Printf(" sigBytes: %x\n", sigBytes)
 
 	result := ecdsa.VerifyASN1(&publicKey, hash[:], sigBytes)
 	if result {
@@ -53,8 +49,6 @@ func VerifySignature(senderHex, recipientHex string, amount, timestamp int64, si
 		return errors.New("signature verification failed")
 	}
 
-	fmt.Println("DEBUG VerifySignature: Signature verified successfully!")
-	return nil
 }
 
 func decodePrivateKey(privateKey string) (*ecdsa.PrivateKey, error) {

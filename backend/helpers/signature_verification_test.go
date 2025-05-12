@@ -33,6 +33,7 @@ func TestSignatureVerification(t *testing.T) {
 	// TODO: definetly not hardcode this, do more generic tests
 	amount := int64(1000)
 	timestamp := int64(1746890553)
+	//Should not use timestamp as signature data, as it could be replayed many times
 
 	signature, err := SignTransaction(senderPrivKey, sender, recipient, amount, timestamp)
 	if err != nil {
