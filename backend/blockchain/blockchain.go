@@ -37,8 +37,7 @@ type UTXO struct {
 type Blockchain struct {
 	Blocks     []Block
 	MemoryPool []*pb.Transaction
-	// AccountBalances map[string]uint64
-	UTXOSet map[string]UTXO
+	UTXOSet    map[string]UTXO
 }
 
 func NewBlockChain() *Blockchain {
@@ -49,12 +48,8 @@ func createGenesisBlock() *Blockchain {
 	bc := &Blockchain{
 		Blocks:     []Block{},
 		MemoryPool: []*pb.Transaction{},
-		// AccountBalances: make(map[string]uint64),
-		UTXOSet: make(map[string]UTXO),
+		UTXOSet:    make(map[string]UTXO),
 	}
-
-	// satoshiPubKey := SatoshiPublicKey
-	// bc.AccountBalances[satoshiPubKey] = 100000 // coinbase transaction
 
 	genesis := Block{
 		index:        0,
@@ -137,15 +132,6 @@ func (bc *Blockchain) HandleTransaction(tx *pb.Transaction) (bool, string) {
 		}
 		bc.UTXOSet[fmt.Sprintf("%s:%d", tx.Txid, 1)] = changeUTXO
 	}
-
-	// check account balanece
-	// if bc.AccountBalances[tx.Sender] < tx.Amount {
-	// 	return false, "insufficient balance"
-	// }
-
-	//will update this logic with UTXO
-	// bc.AccountBalances[tx.Sender] -= tx.Amount
-	// bc.AccountBalances[tx.Recipient] += tx.Amount
 
 	bc.MemoryPool = append(bc.MemoryPool, tx)
 

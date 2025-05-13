@@ -1,6 +1,10 @@
 package blockchain
 
 import (
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
+	"fmt"
 	"testing"
 	"time"
 
@@ -26,8 +30,21 @@ func signTransaction(privateKeyHex string, tx *pb.Transaction) ([]byte, error) {
 	return []byte(signature), nil
 }
 
+func generateRecipientKeyHex() (priv *ecdsa.PrivateKey, pubHex string, err error) {
+	privKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	if err != nil {
+		return nil, "", err
+	}
+	pubKey := append(privKey.PublicKey.X.Bytes(), privKey.PublicKey.Y.Bytes()...)
+	return privKey, fmt.Sprintf("%x", pubKey), nil
+}
 func TestUTXOTransactionSuccess(t *testing.T) {
 	bc := NewBlockChain()
+
+	_, recipientHex, err := generateRecipientKeyHex()
+	if err != nil {
+		t.Fatalf("failed to generate recipient key: %v", err)
+	}
 
 	bc.UTXOSet = map[string]UTXO{
 		"init:0": {
@@ -40,7 +57,7 @@ func TestUTXOTransactionSuccess(t *testing.T) {
 
 	tx := &pb.Transaction{
 		Sender:    SatoshiPublicKey,
-		Recipient: "a0caa95ac1b9a961b804f606e86e976d561fe08956f6e32f72b6a268304e59d795c75bf4c8ea238f0e74aaddee59a9c65e55dfed22c7ceb92a10ec630a1cbb5b",
+		Recipient: recipientHex,
 		Amount:    50,
 		Timestamp: time.Now().Unix(),
 	}
@@ -77,6 +94,11 @@ func TestUTXOTransactionSuccess(t *testing.T) {
 func TestUTXOTransactionInsufficientBalance(t *testing.T) {
 	bc := NewBlockChain()
 
+	_, recipientHex, err := generateRecipientKeyHex()
+	if err != nil {
+		t.Fatalf("failed to generate recipient key: %v", err)
+	}
+
 	bc.UTXOSet = map[string]UTXO{
 		"init:0": {
 			Txid:      "init",
@@ -88,7 +110,7 @@ func TestUTXOTransactionInsufficientBalance(t *testing.T) {
 
 	tx := &pb.Transaction{
 		Sender:    SatoshiPublicKey,
-		Recipient: "a0caa95ac1b9a961b804f606e86e976d561fe08956f6e32f72b6a268304e59d795c75bf4c8ea238f0e74aaddee59a9c65e55dfed22c7ceb92a10ec630a1cbb5b",
+		Recipient: recipientHex,
 		Amount:    50,
 		Timestamp: time.Now().Unix(),
 	}
