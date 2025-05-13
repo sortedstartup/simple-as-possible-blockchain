@@ -27,10 +27,17 @@ type Block struct {
 	Nonce        int
 }
 
+type UTXO struct {
+	Txid      string
+	Index     int
+	Amount    uint64
+	Recipient string
+}
+
 type Blockchain struct {
-	Blocks          []Block
-	MemoryPool      []*pb.Transaction
-	AccountBalances map[string]uint64
+	Blocks     []Block
+	MemoryPool []*pb.Transaction
+	UTXOSet    map[string]UTXO
 }
 
 func NewBlockChain() *Blockchain {
@@ -39,13 +46,10 @@ func NewBlockChain() *Blockchain {
 
 func createGenesisBlock() *Blockchain {
 	bc := &Blockchain{
-		Blocks:          []Block{},
-		MemoryPool:      []*pb.Transaction{},
-		AccountBalances: make(map[string]uint64),
+		Blocks:     []Block{},
+		MemoryPool: []*pb.Transaction{},
+		UTXOSet:    make(map[string]UTXO),
 	}
-
-	satoshiPubKey := SatoshiPublicKey
-	bc.AccountBalances[satoshiPubKey] = 100000 // coinbase transaction
 
 	genesis := Block{
 		index:        0,
@@ -57,6 +61,14 @@ func createGenesisBlock() *Blockchain {
 	}
 	genesis.hash = computeHash(genesis)
 	bc.Blocks = append(bc.Blocks, genesis)
+
+	coinbaseUTXO := UTXO{
+		Txid:      "genesis",
+		Index:     0,
+		Amount:    100000,
+		Recipient: SatoshiPublicKey,
+	}
+	bc.UTXOSet["genesis:0"] = coinbaseUTXO
 	return bc
 }
 
@@ -80,14 +92,46 @@ func (bc *Blockchain) HandleTransaction(tx *pb.Transaction) (bool, string) {
 		return false, "signature verification failed: " + err.Error()
 	}
 
-	// check account balanece
-	if bc.AccountBalances[tx.Sender] < tx.Amount {
-		return false, "insufficient balance"
+	var selected []UTXO
+	var total uint64 = 0
+	for _, utxo := range bc.UTXOSet {
+		if utxo.Recipient == tx.Sender {
+			selected = append(selected, utxo)
+			total += utxo.Amount
+			if total >= tx.Amount {
+				break
+			}
+
+		}
 	}
 
-	//will update this logic with UTXO
-	bc.AccountBalances[tx.Sender] -= tx.Amount
-	bc.AccountBalances[tx.Recipient] += tx.Amount
+	if total < tx.Amount {
+		return false, "insufficient balance (from UTXOs)"
+	}
+
+	for _, utxo := range selected {
+		key := fmt.Sprintf("%s:%d", utxo.Txid, utxo.Index)
+		delete(bc.UTXOSet, key)
+	}
+
+	recipientUTXO := UTXO{
+		Txid:      tx.Txid,
+		Index:     0,
+		Amount:    tx.Amount,
+		Recipient: tx.Recipient,
+	}
+	bc.UTXOSet[fmt.Sprintf("%s:%d", tx.Txid, 0)] = recipientUTXO
+
+	change := total - tx.Amount
+	if change > 0 {
+		changeUTXO := UTXO{
+			Txid:      tx.Txid,
+			Index:     1,
+			Amount:    change,
+			Recipient: tx.Sender,
+		}
+		bc.UTXOSet[fmt.Sprintf("%s:%d", tx.Txid, 1)] = changeUTXO
+	}
 
 	bc.MemoryPool = append(bc.MemoryPool, tx)
 
